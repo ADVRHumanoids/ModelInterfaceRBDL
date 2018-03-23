@@ -50,7 +50,7 @@ void resume_stdout(int fd) {
 
 bool XBot::ModelInterfaceRBDL::init_model(const std::string& path_to_cfg)
 {
-    Logger::info() << "Initializing RBDL model!" << Logger::endl();
+    Logger::info() << "Initializing RBDL model using config file : " << path_to_cfg << Logger::endl();
     Logger::info() << "Floating base model: " << (isFloatingBase() ? "TRUE" : "FALSE") << Logger::endl();
     // Init rbdl model with urdf
     int fd = suppress_stdout();
