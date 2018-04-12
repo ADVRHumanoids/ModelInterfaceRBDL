@@ -240,7 +240,7 @@ int XBot::ModelInterfaceRBDL::linkId(const std::string& link_name) const
     }
 }
 
-bool XBot::ModelInterfaceRBDL::update(bool update_position, bool update_velocity, bool update_desired_acceleration)
+bool XBot::ModelInterfaceRBDL::update_internal(bool update_position, bool update_velocity, bool update_desired_acceleration)
 {
     bool success = true;
     Eigen::VectorXd *q_ptr = nullptr, *qdot_ptr = nullptr, *qddot_ptr = nullptr;
@@ -257,8 +257,6 @@ bool XBot::ModelInterfaceRBDL::update(bool update_position, bool update_velocity
         qddot_ptr = &_qddot;
     }
 
-
-//     RigidBodyDynamics::UpdateKinematicsCustom(_rbdl_model, q_ptr, qdot_ptr, qddot_ptr);
     RigidBodyDynamics::UpdateKinematics(_rbdl_model, _q, _qdot, _qddot);
 
 
