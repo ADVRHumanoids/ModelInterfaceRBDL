@@ -95,7 +95,7 @@ public:
 protected:
 
 
-    virtual bool init_model(const std::string& path_to_cfg) final;
+    virtual bool init_model(const ConfigOptions& cfg) final;
 
 private:
 
