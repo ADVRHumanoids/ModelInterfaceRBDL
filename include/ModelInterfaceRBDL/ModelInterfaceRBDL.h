@@ -78,9 +78,9 @@ public:
                                       const KDL::Vector& point,
                                       KDL::Vector& acceleration) const;
 
-    virtual bool update(bool update_position = true,
-                        bool update_velocity = false,
-                        bool update_desired_acceleration = false);
+    virtual bool update_internal(bool update_position,
+                        bool update_velocity,
+                        bool update_desired_acceleration);
 
     virtual int getLinkID(const std::string &link_name) const;
 
@@ -95,7 +95,7 @@ public:
 protected:
 
 
-    virtual bool init_model(const std::string& path_to_cfg) final;
+    virtual bool init_model(const ConfigOptions& cfg) final;
 
 private:
 
