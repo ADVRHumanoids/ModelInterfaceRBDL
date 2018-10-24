@@ -410,6 +410,21 @@ bool XBot::ModelInterfaceRBDL::computeJdotQdot(const std::string& link_name,
 
 }
 
+bool XBot::ModelInterfaceRBDL::computeJdotQdot(const std::string& link_name,
+                                               const Eigen::Vector3d& point,
+                                               Eigen::Matrix<double,6,1>& jdotqdot) const
+{
+    int body_id = linkId(link_name);
+    if( body_id == -1 ){
+        Logger::error() << "in " << __func__ << ": link " << link_name << " not defined in RBDL model!" << Logger::endl();
+        return false;
+    }
+
+    jdotqdot.noalias() =  _row_inversion*RigidBodyDynamics::CalcPointAcceleration6D(_rbdl_model, _q, _qdot, _qddot*0, body_id, point, true);
+    return true;
+
+}
+
 void XBot::ModelInterfaceRBDL::getCOMAcceleration(KDL::Vector& acceleration) const
 {
     double mass = 0;
