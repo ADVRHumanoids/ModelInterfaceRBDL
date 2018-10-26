@@ -68,6 +68,8 @@ public:
 
     virtual bool computeJdotQdot(const std::string& link_name, const KDL::Vector& point, KDL::Twist& jdotqdot) const;
 
+    virtual bool computeJdotQdot(const std::string& link_name, const Eigen::Vector3d& point, Eigen::Matrix<double,6,1>& jdotqdot) const;
+
     virtual void getCOMAcceleration(KDL::Vector& acceleration) const;
 
     virtual void getInertiaMatrix(Eigen::MatrixXd& M) const;
