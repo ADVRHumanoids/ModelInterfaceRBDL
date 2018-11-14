@@ -370,10 +370,11 @@ void XBot::ModelInterfaceRBDL::setGravity(const KDL::Vector& gravity)
 void XBot::ModelInterfaceRBDL::computeGravityCompensation(Eigen::VectorXd& g) const
 {
     g.resize(_ndof);
-
+    _tmp_jstate.setZero(_ndof);
+    
     RigidBodyDynamics::NonlinearEffects(_rbdl_model,
                                         _q,
-                                        _qdot*0,
+                                        _tmp_jstate,
                                         g );
 }
 

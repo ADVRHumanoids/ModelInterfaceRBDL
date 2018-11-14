@@ -116,6 +116,7 @@ private:
     mutable RigidBodyDynamics::Math::Vector3d _tmp_vector3d, _tmp_vector3d_1;
     mutable RigidBodyDynamics::Math::Matrix3d _tmp_matrix3d;
     mutable RigidBodyDynamics::Math::MatrixNd _tmp_jacobian3, _tmp_jacobian6;
+    mutable RigidBodyDynamics::Math::VectorNd _tmp_jstate;
     mutable KDL::Frame _tmp_kdl_frame;
 
     Eigen::Matrix<double, 6, 6> _row_inversion;
