@@ -69,6 +69,7 @@ bool XBot::ModelInterfaceRBDL::init_model(const XBot::ConfigOptions& cfg)
     _qddot.setZero(_ndof);
     _tau.setZero(_ndof);
     _zeros.setZero(_ndof);
+    _jtmp.setZero(_ndof);
     _tmp_jacobian3.setZero(3, _ndof);
     _tmp_jacobian6.setZero(6, _ndof);
     _row_inversion << Eigen::Matrix3d::Zero(),     Eigen::Matrix3d::Identity(),
@@ -357,7 +358,13 @@ bool XBot::ModelInterfaceRBDL::getVelocityTwist(const std::string& link_name, KD
     }
 
     _tmp_vector3d.setZero();
-    tf::twistEigenToKDL(_row_inversion*RigidBodyDynamics::CalcPointVelocity6D(_rbdl_model, _q, _qdot, body_id, _tmp_vector3d, false), velocity);
+    tf::twistEigenToKDL(_row_inversion*RigidBodyDynamics::CalcPointVelocity6D(_rbdl_model, 
+                                                                              _q, 
+                                                                              _qdot, 
+                                                                              body_id,
+                                                                              _tmp_vector3d, 
+                                                                              false), 
+                        velocity);
     return true;
 }
 
@@ -370,12 +377,16 @@ void XBot::ModelInterfaceRBDL::setGravity(const KDL::Vector& gravity)
 void XBot::ModelInterfaceRBDL::computeGravityCompensation(Eigen::VectorXd& g) const
 {
     g.resize(_ndof);
-    _tmp_jstate.setZero(_ndof);
+
+    RigidBodyDynamics::NonlinearEffects(_rbdl_model,
+                                        _q,
+                                        _zeros,
+                                        g);
     
     RigidBodyDynamics::NonlinearEffects(_rbdl_model,
                                         _q,
-                                        _tmp_jstate,
-                                        g );
+                                        _qdot,
+                                        _jtmp);
 }
 
 void XBot::ModelInterfaceRBDL::computeInverseDynamics(Eigen::VectorXd& tau) const

@@ -105,6 +105,7 @@ private:
     Eigen::Vector3d _fb_origin_offset;
     int _ndof;
     Eigen::VectorXd _zeros;
+    mutable Eigen::VectorXd _jtmp;
 
     std::string _floating_base_link;
     int _floating_base_link_id;
