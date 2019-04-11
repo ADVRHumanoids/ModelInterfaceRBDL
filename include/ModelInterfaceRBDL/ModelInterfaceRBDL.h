@@ -50,6 +50,9 @@ public:
 
     virtual bool getAccelerationTwist(const std::string& link_name, KDL::Twist& acceleration) const;
 
+    virtual bool getRelativeAccelerationTwist(const std::string& link_name, const std::string& base_link_name,
+                                              KDL::Twist& acceleration) const;
+
     virtual bool getVelocityTwist(const std::string& link_name, KDL::Twist& velocity) const;
 
     virtual bool setFloatingBasePose(const KDL::Frame& floating_base_pose);

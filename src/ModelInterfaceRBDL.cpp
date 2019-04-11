@@ -349,6 +349,74 @@ bool XBot::ModelInterfaceRBDL::getAccelerationTwist(const std::string& link_name
     return true;
 }
 
+bool XBot::ModelInterfaceRBDL::getRelativeAccelerationTwist(const std::string& link_name,
+                                                            const std::string& base_link_name,
+                                                            KDL::Twist& acceleration) const
+{
+    int body_id_a = linkId(base_link_name);
+    if( body_id_a == -1 ){
+        Logger::error() << "in " << __func__ << ": link " << base_link_name << " not defined in RBDL model!" << Logger::endl();
+        return false;
+    }
+
+    int body_id_b = linkId(link_name);
+    if( body_id_b == -1 ){
+        Logger::error() << "in " << __func__ << ": link " << link_name << " not defined in RBDL model!" << Logger::endl();
+        return false;
+    }
+
+    RigidBodyDynamics::Math::Vector3d zeros; zeros.setZero();
+    //1) Compute Spatial Jacobians of base and link
+    RigidBodyDynamics::Math::MatrixNd Jbase(6, _rbdl_model.dof_count);
+    RigidBodyDynamics::CalcPointJacobian6D(_rbdl_model, _q, body_id_a, zeros, Jbase, false);
+
+    RigidBodyDynamics::Math::MatrixNd Jlink(6, _rbdl_model.dof_count);
+    RigidBodyDynamics::CalcPointJacobian6D(_rbdl_model, _q, body_id_b, zeros, Jlink, false);
+
+    //2) Compute relative spatial velocities
+    SpatialVector_t v_base_spatial = Jbase*_qdot;
+    SpatialVector_t v_link_spatial = Jlink*_qdot;
+    SpatialVector_t v_relative_spatial = v_base_spatial - v_link_spatial;
+
+    //3) Compute skew product
+    Eigen::Matrix6d rdot_base_cross; rdot_base_cross.setZero();
+    rdot_base_cross.block(3,3,3,3) = RigidBodyDynamics::Math::VectorCrossMatrix (v_base_spatial.tail(3));
+    Eigen::Matrix6d rdot_link_cross; rdot_link_cross.setZero();
+    rdot_link_cross.block(3,3,3,3) = RigidBodyDynamics::Math::VectorCrossMatrix (v_link_spatial.tail(3));
+    Eigen::Matrix6d rdot_relative_cross; rdot_relative_cross.setZero();
+    rdot_relative_cross.block(3,3,3,3) = RigidBodyDynamics::Math::VectorCrossMatrix (v_relative_spatial.tail(3));
+
+    //4) Compute cross products and reverse order
+    SpatialVector_t cross_base_tmp = (rdot_base_cross*v_base_spatial);
+    SpatialVector_t cross_link_tmp = (rdot_link_cross*v_link_spatial);
+    SpatialVector_t cross_relative_tmp = (rdot_relative_cross*v_relative_spatial);
+
+    SpatialVector_t cross_base; cross_base.head(3) = cross_base_tmp.tail(3); cross_base.tail(3) = cross_base_tmp.head(3);
+    SpatialVector_t cross_link; cross_link.head(3) = cross_link_tmp.tail(3); cross_link.tail(3) = cross_link_tmp.head(3);
+    SpatialVector_t cross_relative; cross_relative.head(3) = cross_relative_tmp.tail(3); cross_relative.tail(3) = cross_relative_tmp.head(3);
+
+    //5) Get Cartesian accelerations
+    Eigen::Vector6d a_base;
+    ModelInterface::getAccelerationTwist(base_link_name, a_base);
+    Eigen::Vector6d a_link;
+    ModelInterface::getAccelerationTwist(link_name, a_link);
+
+    //6) Compute final relative acceleration and copy in KDL Vector
+    Eigen::Vector6d a_relative = a_base + cross_base - a_link - cross_link -cross_relative;
+
+    acceleration.vel[0] = a_relative[0];
+    acceleration.vel[1] = a_relative[1];
+    acceleration.vel[2] = a_relative[2];
+
+    acceleration.rot[0] = a_relative[2];
+    acceleration.rot[1] = a_relative[3];
+    acceleration.rot[2] = a_relative[4];
+
+    //7) Should I rotate in base frame?
+
+    return true;
+}
+
 bool XBot::ModelInterfaceRBDL::getVelocityTwist(const std::string& link_name, KDL::Twist& velocity) const
 {
     int body_id = linkId(link_name);
