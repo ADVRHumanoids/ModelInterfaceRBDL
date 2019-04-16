@@ -130,7 +130,6 @@ private:
     int jointModelId(const std::string& joint_name) const;
 
 
-
 };
 
 

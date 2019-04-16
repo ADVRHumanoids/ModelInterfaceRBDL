@@ -365,54 +365,40 @@ bool XBot::ModelInterfaceRBDL::getRelativeAccelerationTwist(const std::string& l
         return false;
     }
 
-    RigidBodyDynamics::Math::Vector3d zeros; zeros.setZero();
-    //1) Compute Spatial Jacobians of base and link
-    RigidBodyDynamics::Math::MatrixNd Jbase(6, _rbdl_model.dof_count);
-    RigidBodyDynamics::CalcPointJacobian6D(_rbdl_model, _q, body_id_a, zeros, Jbase, false);
 
-    RigidBodyDynamics::Math::MatrixNd Jlink(6, _rbdl_model.dof_count);
-    RigidBodyDynamics::CalcPointJacobian6D(_rbdl_model, _q, body_id_b, zeros, Jlink, false);
+    //1) Get Rotation
+    Eigen::Affine3d Tbase;
+    ModelInterface::getPose(base_link_name, Tbase);
+    Eigen::Affine3d Tlink;
+    ModelInterface::getPose(link_name, Tlink);
 
-    //2) Compute relative spatial velocities
-    SpatialVector_t v_base_spatial = Jbase*_qdot;
-    SpatialVector_t v_link_spatial = Jlink*_qdot;
-    SpatialVector_t v_relative_spatial = v_base_spatial - v_link_spatial;
+    //2) Get Accelerations
+    Eigen::Vector6d abase, alink;
+    ModelInterface::getAccelerationTwist(base_link_name, abase);
+    ModelInterface::getAccelerationTwist(link_name, alink);
 
-    //3) Compute skew product
-    Eigen::Matrix6d rdot_base_cross; rdot_base_cross.setZero();
-    rdot_base_cross.block(3,3,3,3) = RigidBodyDynamics::Math::VectorCrossMatrix (v_base_spatial.tail(3));
-    Eigen::Matrix6d rdot_link_cross; rdot_link_cross.setZero();
-    rdot_link_cross.block(3,3,3,3) = RigidBodyDynamics::Math::VectorCrossMatrix (v_link_spatial.tail(3));
-    Eigen::Matrix6d rdot_relative_cross; rdot_relative_cross.setZero();
-    rdot_relative_cross.block(3,3,3,3) = RigidBodyDynamics::Math::VectorCrossMatrix (v_relative_spatial.tail(3));
+    //3) Get Velocities
+    Eigen::Vector6d vbase, vlink;
+    ModelInterface::getVelocityTwist(base_link_name, vbase);
+    ModelInterface::getVelocityTwist(link_name, vlink);
 
-    //4) Compute cross products and reverse order
-    SpatialVector_t cross_base_tmp = (rdot_base_cross*v_base_spatial);
-    SpatialVector_t cross_link_tmp = (rdot_link_cross*v_link_spatial);
-    SpatialVector_t cross_relative_tmp = (rdot_relative_cross*v_relative_spatial);
 
-    SpatialVector_t cross_base; cross_base.head(3) = cross_base_tmp.tail(3); cross_base.tail(3) = cross_base_tmp.head(3);
-    SpatialVector_t cross_link; cross_link.head(3) = cross_link_tmp.tail(3); cross_link.tail(3) = cross_link_tmp.head(3);
-    SpatialVector_t cross_relative; cross_relative.head(3) = cross_relative_tmp.tail(3); cross_relative.tail(3) = cross_relative_tmp.head(3);
+    //4) Final result
+    Eigen::Vector3d r = Tlink.translation() - Tbase.translation();
+    Eigen::Vector6d a; a.setZero(6);
+    a.head(3) = Tbase.linear().inverse()*(alink.head(3) - abase.head(3)
+                                          - abase.tail<3>().cross(r)
+                                          - 2.*vbase.tail<3>().cross((vlink-vbase).head<3>())
+                                          + vbase.tail<3>().cross(vbase.tail<3>().cross(r)) );
+    a.tail(3) = Tbase.linear().inverse()*((alink.tail(3)-abase.tail(3)) - (vbase.tail<3>().cross(vlink.tail<3>())));
 
-    //5) Get Cartesian accelerations
-    Eigen::Vector6d a_base;
-    ModelInterface::getAccelerationTwist(base_link_name, a_base);
-    Eigen::Vector6d a_link;
-    ModelInterface::getAccelerationTwist(link_name, a_link);
 
-    //6) Compute final relative acceleration and copy in KDL Vector
-    Eigen::Vector6d a_relative = a_base + cross_base - a_link - cross_link -cross_relative;
-
-    acceleration.vel[0] = a_relative[0];
-    acceleration.vel[1] = a_relative[1];
-    acceleration.vel[2] = a_relative[2];
-
-    acceleration.rot[0] = a_relative[2];
-    acceleration.rot[1] = a_relative[3];
-    acceleration.rot[2] = a_relative[4];
-
-    //7) Should I rotate in base frame?
+    acceleration.vel[0] = a[0];
+    acceleration.vel[1] = a[1];
+    acceleration.vel[2] = a[2];
+    acceleration.rot[0] = a[3];
+    acceleration.rot[1] = a[4];
+    acceleration.rot[2] = a[5];
 
     return true;
 }
