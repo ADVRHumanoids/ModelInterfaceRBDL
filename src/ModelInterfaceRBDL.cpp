@@ -118,8 +118,8 @@ bool XBot::ModelInterfaceRBDL::init_model(const XBot::ConfigOptions& cfg)
     }
 
     // Fill robot mass
-    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, &_qddot, _mass, _tmp_vector3d, nullptr, nullptr, nullptr, nullptr, false);
-
+    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, _mass, _tmp_vector3d, nullptr, nullptr, false);
+    
 //     std::cout << RigidBodyDynamics::Utils::GetModelHierarchy(_rbdl_model) << std::endl;
 
     _fb_origin_offset = RigidBodyDynamics::CalcBodyToBaseCoordinates(_rbdl_model, _q*0, _floating_base_link_id, Eigen::Vector3d::Zero(), true);
@@ -161,7 +161,7 @@ bool XBot::ModelInterfaceRBDL::setFloatingBaseTwist(const KDL::Twist& floating_b
 void XBot::ModelInterfaceRBDL::getCOM(KDL::Vector& com_position) const
 {
     double mass;
-    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, &_qddot, mass, _tmp_vector3d, nullptr, nullptr, nullptr, nullptr, false);
+    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, mass, _tmp_vector3d, nullptr, nullptr, false);
     tf::vectorEigenToKDL(_tmp_vector3d, com_position);
 }
 
@@ -327,7 +327,7 @@ bool XBot::ModelInterfaceRBDL::setFloatingBasePose(const KDL::Frame& floating_ba
 void XBot::ModelInterfaceRBDL::getCOMVelocity(KDL::Vector& velocity) const
 {
     double mass;
-    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, &_qddot, mass, _tmp_vector3d, &_tmp_vector3d_1);
+    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, mass, _tmp_vector3d, &_tmp_vector3d_1, nullptr, true);
     tf::vectorEigenToKDL(_tmp_vector3d_1, velocity);
 }
 
@@ -494,7 +494,7 @@ void XBot::ModelInterfaceRBDL::getCentroidalMomentum(Eigen::Vector6d& centroidal
 {
     double mass;
     RigidBodyDynamics::Math::Vector3d tmp_2;
-    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, &_qddot, mass, tmp_2, &_tmp_vector3d, &_tmp_vector3d_1, nullptr, nullptr, false);
+    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, mass, tmp_2, &_tmp_vector3d, &_tmp_vector3d_1, false);
     centroidal_momentum.head<3>() = _tmp_vector3d*mass;
     centroidal_momentum.tail<3>() = _tmp_vector3d_1;
 }
