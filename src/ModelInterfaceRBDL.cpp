@@ -403,6 +403,53 @@ bool XBot::ModelInterfaceRBDL::getRelativeAccelerationTwist(const std::string& l
     return true;
 }
 
+bool XBot::ModelInterfaceRBDL::computeRelativeJdotQdot(const std::string& target_link_name,
+                                                       const std::string& base_link_name,
+                                                       KDL::Twist& jdotqdot) const
+{
+    int body_id_a = linkId(base_link_name);
+    if( body_id_a == -1 ){
+        Logger::error() << "in " << __func__ << ": link " << base_link_name << " not defined in RBDL model!" << Logger::endl();
+        return false;
+    }
+
+    int body_id_b = linkId(target_link_name);
+    if( body_id_b == -1 ){
+        Logger::error() << "in " << __func__ << ": link " << target_link_name << " not defined in RBDL model!" << Logger::endl();
+        return false;
+    }
+
+    //1) Get Rotation
+    Eigen::Affine3d Tbase;
+    ModelInterface::getPose(base_link_name, Tbase);
+    Eigen::Affine3d Tlink;
+    ModelInterface::getPose(target_link_name, Tlink);
+
+
+    //3) Get Velocities
+    Eigen::Vector6d vbase, vlink;
+    ModelInterface::getVelocityTwist(base_link_name, vbase);
+    ModelInterface::getVelocityTwist(target_link_name, vlink);
+
+
+    //4) Final result
+    Eigen::Vector3d r = Tlink.translation() - Tbase.translation();
+    Eigen::Vector6d JdotQdot; JdotQdot.setZero(6);
+    JdotQdot.head(3) = Tbase.linear().inverse()*(- 2.*vbase.tail<3>().cross((vlink-vbase).head<3>())
+                                          + vbase.tail<3>().cross(vbase.tail<3>().cross(r)) );
+    JdotQdot.tail(3) = Tbase.linear().inverse()*( - (vbase.tail<3>().cross(vlink.tail<3>())));
+
+
+    jdotqdot.vel[0] = JdotQdot[0];
+    jdotqdot.vel[1] = JdotQdot[1];
+    jdotqdot.vel[2] = JdotQdot[2];
+    jdotqdot.rot[0] = JdotQdot[3];
+    jdotqdot.rot[1] = JdotQdot[4];
+    jdotqdot.rot[2] = JdotQdot[5];
+
+    return true;
+}
+
 bool XBot::ModelInterfaceRBDL::getVelocityTwist(const std::string& link_name, KDL::Twist& velocity) const
 {
     int body_id = linkId(link_name);
