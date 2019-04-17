@@ -425,6 +425,12 @@ bool XBot::ModelInterfaceRBDL::computeRelativeJdotQdot(const std::string& target
     Eigen::Affine3d Tlink;
     ModelInterface::getPose(target_link_name, Tlink);
 
+    //2) GetJDotQdot
+    Eigen::Vector6d JdQdbase;
+    Eigen::Vector3d zero; zero.setZero();
+    ModelInterface::computeJdotQdot(base_link_name, zero, JdQdbase);
+    Eigen::Vector6d JdQdlink;
+    ModelInterface::computeJdotQdot(target_link_name, zero, JdQdlink);
 
     //3) Get Velocities
     Eigen::Vector6d vbase, vlink;
@@ -432,12 +438,15 @@ bool XBot::ModelInterfaceRBDL::computeRelativeJdotQdot(const std::string& target
     ModelInterface::getVelocityTwist(target_link_name, vlink);
 
 
+
     //4) Final result
     Eigen::Vector3d r = Tlink.translation() - Tbase.translation();
     Eigen::Vector6d JdotQdot; JdotQdot.setZero(6);
-    JdotQdot.head(3) = Tbase.linear().inverse()*(- 2.*vbase.tail<3>().cross((vlink-vbase).head<3>())
+    JdotQdot.head(3) = Tbase.linear().inverse()*(JdQdlink.head(3) - JdQdbase.head(3)
+                                                 - JdQdbase.tail<3>().cross(r)
+                                          - 2.*vbase.tail<3>().cross((vlink-vbase).head<3>())
                                           + vbase.tail<3>().cross(vbase.tail<3>().cross(r)) );
-    JdotQdot.tail(3) = Tbase.linear().inverse()*( - (vbase.tail<3>().cross(vlink.tail<3>())));
+    JdotQdot.tail(3) = Tbase.linear().inverse()*((JdQdlink.tail(3)-JdQdbase.tail(3)) - (vbase.tail<3>().cross(vlink.tail<3>())));
 
 
     jdotqdot.vel[0] = JdotQdot[0];
