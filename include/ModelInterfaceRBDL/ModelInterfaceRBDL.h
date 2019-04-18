@@ -50,6 +50,9 @@ public:
 
     virtual bool getAccelerationTwist(const std::string& link_name, KDL::Twist& acceleration) const;
 
+    virtual bool getRelativeAccelerationTwist(const std::string& link_name, const std::string& base_link_name,
+                                              KDL::Twist& acceleration) const;
+
     virtual bool getVelocityTwist(const std::string& link_name, KDL::Twist& velocity) const;
 
     virtual bool setFloatingBasePose(const KDL::Frame& floating_base_pose);
@@ -67,6 +70,10 @@ public:
     virtual void computeNonlinearTerm(Eigen::VectorXd& n) const;
 
     virtual bool computeJdotQdot(const std::string& link_name, const KDL::Vector& point, KDL::Twist& jdotqdot) const;
+
+    virtual bool computeRelativeJdotQdot(const std::string& target_link_name,
+                                         const std::string& base_link_name,
+                                         KDL::Twist& jdotqdot) const;
 
     virtual void getCOMAcceleration(KDL::Vector& acceleration) const;
 
@@ -125,7 +132,6 @@ private:
 
     int linkId(const std::string& link_name) const;
     int jointModelId(const std::string& joint_name) const;
-
 
 
 };
