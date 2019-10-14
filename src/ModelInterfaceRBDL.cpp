@@ -30,38 +30,17 @@ REGISTER_SO_LIB_(XBot::ModelInterfaceRBDL, XBot::ModelInterface);
 
 using XBot::Logger;
 
-int suppress_stdout() {
-  fflush(stdout);
-
-  int ret = dup(1);
-  int nullfd = open("/dev/null", O_WRONLY);
-  // check nullfd for error omitted
-  dup2(nullfd, 1);
-  close(nullfd);
-
-  return ret;
-}
-
-void resume_stdout(int fd) {
-  fflush(stdout);
-  dup2(fd, 1);
-  close(fd);
-}
 
 bool XBot::ModelInterfaceRBDL::init_model(const XBot::ConfigOptions& cfg)
 {
 //     Logger::info() << "Initializing RBDL model using config file : " << path_to_cfg << Logger::endl();
     Logger::info() << "Floating base model: " << (isFloatingBase() ? "TRUE" : "FALSE") << Logger::endl();
     // Init rbdl model with urdf
-    int fd = suppress_stdout();
     if(!RigidBodyDynamics::Addons::URDFReadFromString(getUrdfString().c_str(), &_rbdl_model, isFloatingBase(), false)){
         Logger::error() << "in " << __func__ << ": RBDL model could not be initilized from given URDF string!" << Logger::endl();
         return false;
     }
-    
-    resume_stdout(fd);
    
-
     // Init configuration vectors
     _ndof = _rbdl_model.dof_count;
     _q.setZero(_ndof);
