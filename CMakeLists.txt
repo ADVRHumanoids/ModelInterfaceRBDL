@@ -30,6 +30,8 @@ project(ModelInterfaceRBDL)
 
 LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 
+option(BUILD_TESTS "Compile ModelInterfaceRBDL tests" TRUE)
+
 # C++ 11
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -109,3 +111,15 @@ install_basic_package_files(ModelInterfaceRBDL VARS_PREFIX ${VARS_PREFIX}
                                     NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 include(AddUninstallTarget)
+
+#######################
+# Add Testing target  #
+#######################
+if(BUILD_TESTS)
+  enable_testing()
+  add_custom_target(test_verbose ${CMAKE_CTEST_COMMAND} -V)
+  add_subdirectory(tests)
+
+  add_custom_target(copy_robot_model_files ALL
+                      ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/tests/robots" "${CMAKE_CURRENT_BINARY_DIR}/tests/robots")
+endif()
