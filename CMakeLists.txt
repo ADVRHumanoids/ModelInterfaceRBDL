@@ -21,7 +21,7 @@ cmake_minimum_required(VERSION 3.0)
 
 include(ExternalProject)
 
-project(ModelInterfaceRBDL)
+project(ModelInterfaceRBDL VERSION 1.1.10)
 
 LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 
