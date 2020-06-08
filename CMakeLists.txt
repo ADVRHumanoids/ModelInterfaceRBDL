@@ -56,8 +56,8 @@ add_library(ModelInterfaceRBDL SHARED ${ModelInterfaceRBDL_INCLUDES}
                                  
 target_link_libraries(ModelInterfaceRBDL
     ${XBotInterface_LIBRARIES}
-    ${RBDL_LIBRARIES}
-    ${RBDL_URDFReader_LIBRARIES})
+    ${RBDL_LIBRARY}
+    ${RBDL_URDFReader_LIBRARY})
                                        
 
                                        
