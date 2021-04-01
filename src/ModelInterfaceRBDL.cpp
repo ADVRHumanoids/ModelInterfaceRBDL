@@ -97,7 +97,17 @@ bool XBot::ModelInterfaceRBDL::init_model(const XBot::ConfigOptions& cfg)
     }
 
     // Fill robot mass
-    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, _mass, _tmp_vector3d, nullptr, nullptr, false);
+    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, 
+            _q, 
+            _qdot, 
+            nullptr, // qddot
+            _mass, 
+            _tmp_vector3d, // com pos
+            nullptr, // com vel 
+            nullptr, // com acc
+            nullptr, // L
+            nullptr, // Ldot
+            false);
     
 //     std::cout << RigidBodyDynamics::Utils::GetModelHierarchy(_rbdl_model) << std::endl;
 
@@ -140,7 +150,17 @@ bool XBot::ModelInterfaceRBDL::setFloatingBaseTwist(const KDL::Twist& floating_b
 void XBot::ModelInterfaceRBDL::getCOM(KDL::Vector& com_position) const
 {
     double mass;
-    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, mass, _tmp_vector3d, nullptr, nullptr, false);
+    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, 
+            _q, 
+            _qdot, 
+            nullptr, // qddot
+            mass, 
+            _tmp_vector3d, // com pos
+            nullptr, // com vel 
+            nullptr, // com acc
+            nullptr, // L
+            nullptr, // Ldot
+            false);
     tf::vectorEigenToKDL(_tmp_vector3d, com_position);
 }
 
@@ -306,7 +326,18 @@ bool XBot::ModelInterfaceRBDL::setFloatingBasePose(const KDL::Frame& floating_ba
 void XBot::ModelInterfaceRBDL::getCOMVelocity(KDL::Vector& velocity) const
 {
     double mass;
-    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, mass, _tmp_vector3d, &_tmp_vector3d_1, nullptr, true);
+    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, 
+            _q, 
+            _qdot, 
+            nullptr, // qddot
+            mass, 
+            _tmp_vector3d, // com pos
+            &_tmp_vector3d_1, // com vel 
+            nullptr, // com acc
+            nullptr, // L
+            nullptr, // Ldot
+            false);
+
     tf::vectorEigenToKDL(_tmp_vector3d_1, velocity);
 }
 
@@ -583,7 +614,19 @@ void XBot::ModelInterfaceRBDL::getCentroidalMomentum(Eigen::Vector6d& centroidal
 {
     double mass;
     RigidBodyDynamics::Math::Vector3d tmp_2;
-    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, _q, _qdot, mass, tmp_2, &_tmp_vector3d, &_tmp_vector3d_1, false);
+    
+    RigidBodyDynamics::Utils::CalcCenterOfMass(_rbdl_model, 
+            _q, 
+            _qdot, 
+            nullptr, // qddot
+            mass, 
+            tmp_2, // com pos
+            &_tmp_vector3d, // com vel 
+            nullptr, // com acc
+             &_tmp_vector3d_1, // L
+            nullptr, // Ldot
+            false);
+
     centroidal_momentum.head<3>() = _tmp_vector3d*mass;
     centroidal_momentum.tail<3>() = _tmp_vector3d_1;
 }
