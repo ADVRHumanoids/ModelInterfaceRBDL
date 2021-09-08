@@ -65,4 +65,15 @@ target_link_libraries(ModelInterfaceRBDL
 install(TARGETS ModelInterfaceRBDL
     DESTINATION lib)
 
+install(DIRECTORY include/
+    DESTINATION include
+    FILES_MATCHING PATTERN "*.h")
+
+include(MacroInstallLib)
+
+library_install(ModelInterfaceRBDL
+    ${PROJECT_VERSION_MAJOR}
+    ${PROJECT_VERSION_MINOR}
+    ${PROJECT_VERSION_PATCH})
+
 include(GenerateDeb)
