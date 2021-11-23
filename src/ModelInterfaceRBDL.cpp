@@ -541,6 +541,12 @@ void XBot::ModelInterfaceRBDL::getInertiaMatrix(Eigen::MatrixXd& M) const
     RigidBodyDynamics::CompositeRigidBodyAlgorithm(_rbdl_model, _q, M, false);
 }
 
+void XBot::ModelInterfaceRBDL::getInertiaMatrix(const Eigen::VectorXd& q, Eigen::MatrixXd& M) const
+{
+    M.setZero(_ndof, _ndof);
+    RigidBodyDynamics::CompositeRigidBodyAlgorithm(_rbdl_model, q, M, false);
+}
+
 void XBot::ModelInterfaceRBDL::getInertiaInverseTimesVector(const Eigen::VectorXd& vec, Eigen::VectorXd& minv_vec) const
 {
     minv_vec.setZero(getJointNum());

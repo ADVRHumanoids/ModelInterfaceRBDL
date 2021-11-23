@@ -79,6 +79,8 @@ public:
 
     virtual void getInertiaMatrix(Eigen::MatrixXd& M) const;
 
+    virtual void getInertiaMatrix(const Eigen::VectorXd& q, Eigen::MatrixXd& M) const;
+
     virtual void getInertiaInverseTimesVector(const Eigen::VectorXd& vec, Eigen::VectorXd& minv_vec) const;
 
     virtual bool getPointAcceleration(const std::string& link_name,
