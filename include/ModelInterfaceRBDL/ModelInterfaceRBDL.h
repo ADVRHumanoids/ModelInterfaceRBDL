@@ -104,9 +104,11 @@ protected:
 
     virtual bool init_model(const ConfigOptions& cfg) final;
 
-private:
+    int linkId(const std::string& link_name) const;
 
     mutable RigidBodyDynamics::Model _rbdl_model;
+
+private:
 
     Eigen::VectorXd _q, _qdot, _qddot, _tau;
     Eigen::Vector3d _fb_origin_offset;
@@ -130,7 +132,7 @@ private:
     Eigen::Matrix<double, 6, 6> _row_inversion;
 
 
-    int linkId(const std::string& link_name) const;
+
     int jointModelId(const std::string& joint_name) const;
 
 
