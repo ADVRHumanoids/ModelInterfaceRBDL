@@ -1,4 +1,4 @@
-# 
+#
 #  Copyright (C) 2016 IIT-ADVR
 #  Author: Arturo Laurenzi, Luca Muratore
 #  email: arturo.laurenzi@iit.it, luca.muratore@iit.it
@@ -17,7 +17,7 @@
 #  along with this program. If not, see <http://www.gnu.org/licenses/>
 #
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 include(ExternalProject)
 
@@ -26,7 +26,7 @@ project(ModelInterfaceRBDL VERSION 1.1.10)
 LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 
 # C++ 11
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(XBotInterface REQUIRED)
 
@@ -37,22 +37,22 @@ include_directories(include ${XBotInterface_INCLUDE_DIRS}
                             ${RBDL_INCLUDE_DIR}
                             ${RBDL_URDFReader_INCLUDE_DIR}
                             )
-                            
+
 # for every file in INCLUDES CMake already sets the property HEADER_FILE_ONLY
 file(GLOB_RECURSE ModelInterfaceRBDL_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/include" *.h*)
 
-add_library(ModelInterfaceRBDL SHARED ${ModelInterfaceRBDL_INCLUDES} 
+add_library(ModelInterfaceRBDL SHARED ${ModelInterfaceRBDL_INCLUDES}
                                       src/ModelInterfaceRBDL.cpp)
-                                 
+
 target_link_libraries(ModelInterfaceRBDL
     PUBLIC
     ${XBotInterface_LIBRARIES}
     PRIVATE
     ${RBDL_LIBRARY}
     ${RBDL_URDFReader_LIBRARY})
-                                       
 
-                                       
+
+
 ########################################################################
 install(TARGETS ModelInterfaceRBDL
     DESTINATION lib)
